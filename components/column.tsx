@@ -1,28 +1,26 @@
 "use client"
 import { Droppable, Draggable } from "@hello-pangea/dnd"
 import { Plus } from "lucide-react"
-import TaskCard from "./task-card"
+import VulnerabilityCard from "./vulnerability-card"
 import { Button } from "@/components/ui/button"
-import type { Task, Column as ColumnType } from "@/types/kanban"
+import type { Vulnerability, Column as ColumnType } from "@/types/kanban"
 
 interface ColumnProps {
   column: ColumnType
-  onAddTask: (columnId: string, task: Task) => void
-  onTaskClick: (task: Task) => void
+  onAddVulnerability: (columnId: string, vulnerability: Vulnerability) => void
+  onVulnerabilityClick: (vulnerability: Vulnerability) => void
   onDeleteColumn: () => void
   onUpdateColumn: (columnId: string, updates: Partial<ColumnType>) => void
-  onDuplicateTask: (task: Task, columnId: string) => void
-  onCreateNewTask: (columnId: string) => void
+  onCreateNewVulnerability: (columnId: string) => void
 }
 
 export default function Column({
   column,
-  onAddTask,
-  onTaskClick,
+  onAddVulnerability,
+  onVulnerabilityClick,
   onDeleteColumn,
   onUpdateColumn,
-  onDuplicateTask,
-  onCreateNewTask,
+  onCreateNewVulnerability,
 }: ColumnProps) {
   // Get header color class or default to dark navy
   const headerColorClass = column.color || "bg-[#111D3B]"
@@ -33,7 +31,7 @@ export default function Column({
         <h3 className="font-medium text-sm text-white flex items-center">
           {column.title}
           <span className="ml-2 text-xs bg-[#4F6DF5]/20 text-[#4F6DF5] px-2 py-0.5 rounded-full shadow-sm border border-[#4F6DF5]/30">
-            {column.tasks.length}
+            {column.vulnerabilities.length}
           </span>
         </h3>
       </div>
@@ -46,11 +44,14 @@ export default function Column({
             className="flex-1 p-2 overflow-y-auto"
             style={{ backgroundColor: "#0F1A33" }}
           >
-            {column.tasks.map((task, index) => (
-              <Draggable key={task.id} draggableId={task.id} index={index}>
+            {column.vulnerabilities.map((vulnerability, index) => (
+              <Draggable key={vulnerability.id} draggableId={vulnerability.id} index={index}>
                 {(provided) => (
                   <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                    <TaskCard task={task} onClick={() => onTaskClick(task)} />
+                    <VulnerabilityCard
+                      vulnerability={vulnerability}
+                      onClick={() => onVulnerabilityClick(vulnerability)}
+                    />
                   </div>
                 )}
               </Draggable>
@@ -60,9 +61,9 @@ export default function Column({
             <Button
               variant="ghost"
               className="w-full mt-2 text-[#4F6DF5] hover:text-[#6B85F6] hover:bg-[#4F6DF5]/10 justify-start border border-[#4F6DF5]/20 hover:border-[#4F6DF5]/40"
-              onClick={() => onCreateNewTask(column.id)}
+              onClick={() => onCreateNewVulnerability(column.id)}
             >
-              <Plus className="mr-2 h-4 w-4" /> Add Task
+              <Plus className="mr-2 h-4 w-4" /> Add Vulnerability
             </Button>
           </div>
         )}
