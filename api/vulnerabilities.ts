@@ -31,7 +31,7 @@ export const fetchVulnerabilities = async (): Promise<Vulnerability[]> => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader(), // This adds the Authorization: Bearer <token> header
+        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
       },
     })
 
@@ -64,7 +64,7 @@ export const createVulnerability = async (vulnerability: Omit<Vulnerability, "id
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader(), // This adds the Authorization: Bearer <token> header
+        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
       },
       body: JSON.stringify(vulnerability),
     })
@@ -100,7 +100,7 @@ export const updateVulnerability = async (
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader(), // This adds the Authorization: Bearer <token> header
+        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
       },
       body: JSON.stringify(vulnerability),
     })
@@ -132,7 +132,7 @@ export const deleteVulnerability = async (id: string): Promise<void> => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader(), // This adds the Authorization: Bearer <token> header
+        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
       },
     })
 

@@ -171,11 +171,6 @@ export default function KanbanBoard() {
           <div className="flex items-center">
             <Image src="/images/strike-logo.svg" alt="Strike Logo" width={120} height={40} className="mr-6" />
             <h1 className="text-2xl font-bold text-white">Vulnerability Management</h1>
-            {useMockData && (
-              <span className="ml-4 px-2 py-1 text-xs font-medium bg-[#4F6DF5]/20 text-[#4F6DF5] rounded-md border border-[#4F6DF5]/30">
-                Demo Mode
-              </span>
-            )}
           </div>
           <div className="flex items-center">
 
