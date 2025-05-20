@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation"
 import { login as apiLogin, logout as apiLogout } from "@/api/auth"
 
 type User = {
-  id?: string
+  id: string
   username: string
 }
 
 type AuthContextType = {
   user: User | null
-  login: (username: string, password: string) => Promise<{ success: boolean; message?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>
   logout: () => void
   isLoading: boolean
   token: string | null
@@ -25,10 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  // Check for existing session on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
-    const storedToken = localStorage.getItem("authToken")
+    const storedToken = localStorage.getItem("accessToken")
 
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser))
@@ -37,35 +36,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true)
 
     try {
-      // First check for admin credentials - skip API call if matched
-      if (username === "admin" && password === "admin") {
-        const mockUser = { username: "admin" }
-        const mockToken = "mock-jwt-token-for-development"
-
-        setUser(mockUser)
-        setToken(mockToken)
-
-        localStorage.setItem("user", JSON.stringify(mockUser))
-        localStorage.setItem("authToken", mockToken)
-
-        setIsLoading(false)
-        return { success: true }
-      }
-
-      // If not admin credentials, proceed with API login
-      const response = await apiLogin({ username, password })
+      const response = await apiLogin({ email, password })
       const user = { id: response.user.id, username: response.user.username }
 
       setUser(user)
-      setToken(response.token)
+      setToken(response.accessToken)
 
       localStorage.setItem("user", JSON.stringify(user))
-      // Token is already stored in localStorage by the apiLogin function
-
       setIsLoading(false)
       return { success: true }
     } catch (error) {
@@ -88,7 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.push("/login")
     } catch (error) {
       console.error("Logout error:", error)
-      // Still remove user data even if API call fails
       setUser(null)
       setToken(null)
       localStorage.removeItem("user")

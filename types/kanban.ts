@@ -3,7 +3,7 @@ export interface Vulnerability {
   title: string
   description?: string
   status: string
-  severity: "Critical" | "High" | "Medium" | "Low"
+  severity: VulnSeverity
   cweId?: string
   suggestedFix?: string
   reportedAt: string
@@ -15,4 +15,18 @@ export interface Column {
   title: string
   vulnerabilities: Vulnerability[]
   color?: string
+}
+
+export enum VulnStatus {
+  PENDING_FIX = "PENDING_FIX",
+  IN_PROGRESS = "IN_PROGRESS",
+  SOLVED = "SOLVED",
+  FALSE_POSITIVE = "FALSE_POSITIVE",
+}
+
+export enum VulnSeverity {
+  CRITICAL = "Critical",
+  HIGH = "High",
+  MEDIUM = "Medium",
+  LOW = "Low"
 }

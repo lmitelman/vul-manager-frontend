@@ -58,13 +58,15 @@ export default function Column({
             ))}
             {provided.placeholder}
 
-            <Button
-              variant="ghost"
-              className="w-full mt-2 text-[#4F6DF5] hover:text-[#6B85F6] hover:bg-[#4F6DF5]/10 justify-start border border-[#4F6DF5]/20 hover:border-[#4F6DF5]/40"
-              onClick={() => onCreateNewVulnerability(column.id)}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add Vulnerability
-            </Button>
+            {column.id === 'column-1' && (
+              <Button
+                variant="ghost"
+                className="w-full mt-2 text-[#4F6DF5] hover:text-[#6B85F6] hover:bg-[#4F6DF5]/10 justify-start border border-[#4F6DF5]/20 hover:border-[#4F6DF5]/40"
+                onClick={() => onCreateNewVulnerability(column.id)}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Add Vulnerability
+              </Button>
+            )}
           </div>
         )}
       </Droppable>

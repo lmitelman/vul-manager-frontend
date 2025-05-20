@@ -5,17 +5,12 @@ import type { Vulnerability } from "@/types/kanban"
 const handleApiError = (error: any) => {
   console.error("API Error:", error)
 
-  // You can customize error handling based on your backend's error format
   if (error.response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
     const message = error.response.data?.message || "An error occurred"
     throw new Error(message)
   } else if (error.request) {
-    // The request was made but no response was received
     throw new Error("No response from server. Please check your connection.")
   } else {
-    // Something happened in setting up the request that triggered an Error
     throw new Error(error.message || "An unexpected error occurred")
   }
 }
@@ -26,20 +21,19 @@ const handleApiError = (error: any) => {
  */
 export const fetchVulnerabilities = async (): Promise<Vulnerability[]> => {
   try {
-    // Replace with your actual API endpoint
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITIES}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
+        ...getAuthHeader() as Record<string, string>,
       },
     })
 
     if (!response.ok) {
-      // Handle unauthorized access (e.g., expired token)
       if (response.status === 401) {
-        // You might want to trigger a token refresh or logout here
-        localStorage.removeItem("authToken")
+        localStorage.removeItem("accessToken")
+        localStorage.removeItem("user")
+        window.location.href = "/login"
         throw new Error("Your session has expired. Please log in again.")
       }
       throw new Error(`Error: ${response.status} ${response.statusText}`)

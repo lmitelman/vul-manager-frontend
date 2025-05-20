@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +19,6 @@ export default function LoginPage() {
   const { toast } = useToast()
   const { login, user, isLoading: authLoading } = useAuth()
 
-  // If user is already logged in, redirect to dashboard
   useEffect(() => {
     if (!authLoading && user) {
       router.push("/")
@@ -32,25 +31,9 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Check for admin credentials to show immediate feedback
-      if (username === "admin" && password === "admin") {
-        // Show toast immediately for better UX
-        toast({
-          title: "Login successful",
-          description: "Redirecting to dashboard...",
-        })
-      }
-
-      const result = await login(username, password)
+      const result = await login(email, password)
 
       if (result.success) {
-        if (username !== "admin" || password !== "admin") {
-          // Only show toast for non-admin logins (admin already showed toast)
-          toast({
-            title: "Login successful",
-            description: "Redirecting to dashboard...",
-          })
-        }
         router.push("/")
       } else {
         setError(result.message || "Login failed")
@@ -101,15 +84,15 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label htmlFor="username" className="text-sm font-medium text-white block">
-                  Username
+                  Email
                 </label>
                 <Input
-                  id="username"
+                  id="email"
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="admin"
+                  placeholder="john.doe@strike.sh"
                   className="border-[#4F6DF5]/30 text-white bg-[#111D3B] placeholder:text-gray-500 focus:border-[#4F6DF5] focus:ring-1 focus:ring-[#4F6DF5]"
                   disabled={isLoading}
                 />

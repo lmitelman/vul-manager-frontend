@@ -17,6 +17,6 @@ export const ENDPOINTS = {
 
 // Authentication header - uses token from localStorage
 export const getAuthHeader = () => {
-  const token = localStorage.getItem("authToken")
+  const token = localStorage.getItem("accessToken")
   return token ? { Authorization: `Bearer ${token}` } : {}
 }

@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
-import type { Vulnerability, Column } from "@/types/kanban"
+import { type Vulnerability, type Column, VulnStatus, VulnSeverity } from "@/types/kanban"
 import {
   fetchVulnerabilities,
   createVulnerability,
   updateVulnerability,
   deleteVulnerability as deleteVulnerabilityApi,
 } from "@/api/vulnerabilities"
-import { mockVulnerabilityService } from "@/api/mock-data"
 
 export function useVulnerabilities() {
   const [columns, setColumns] = useState<Column[]>([])
@@ -19,52 +18,49 @@ export function useVulnerabilities() {
   const { toast } = useToast()
   const { user } = useAuth()
 
-  // Determine if we should use mock data (for admin user)
-  const useMockData = user?.username === "admin"
-
   // Fetch vulnerabilities from API or mock data
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      // Get vulnerabilities from either mock data or API
-      const vulnerabilities = useMockData ? await mockVulnerabilityService.getAll() : await fetchVulnerabilities()
-
-      // Group vulnerabilities by status
+      const vulnerabilities = await fetchVulnerabilities()
       const groupedVulnerabilities: Record<string, Vulnerability[]> = {}
 
       vulnerabilities.forEach((vulnerability) => {
         const status = vulnerability.status
+        vulnerability.severity = vulnerability.severity.charAt(0).toUpperCase() + 
+          vulnerability.severity.slice(1).toLowerCase() as VulnSeverity
         if (!groupedVulnerabilities[status]) {
           groupedVulnerabilities[status] = []
         }
         groupedVulnerabilities[status].push(vulnerability)
       })
 
-      // Create columns based on statuses
+      console.log(groupedVulnerabilities)
+
       const columnData: Column[] = [
         {
           id: "column-1",
           title: "Pending Fix",
-          vulnerabilities: groupedVulnerabilities["Pending Fix"] || [],
+          vulnerabilities: groupedVulnerabilities[VulnStatus.PENDING_FIX] || [],
           color: "bg-[#111D3B]",
         },
         {
           id: "column-2",
           title: "In Progress",
-          vulnerabilities: groupedVulnerabilities["In Progress"] || [],
+          vulnerabilities: groupedVulnerabilities[VulnStatus.IN_PROGRESS] || [],
           color: "bg-[#152142]",
         },
         {
           id: "column-3",
           title: "Solved",
-          vulnerabilities: groupedVulnerabilities["Solved"] || [],
+          vulnerabilities: groupedVulnerabilities[VulnStatus.SOLVED] || [],
           color: "bg-[#111D3B]",
         },
         {
           id: "column-4",
           title: "False Positive",
-          vulnerabilities: groupedVulnerabilities["False Positive"] || [],
+          vulnerabilities: groupedVulnerabilities[VulnStatus.FALSE_POSITIVE] || [],
           color: "bg-[#152142]",
         },
       ]
@@ -80,20 +76,15 @@ export function useVulnerabilities() {
     } finally {
       setIsLoading(false)
     }
-  }, [toast, useMockData])
+  }, [toast, user])
 
-  // Load vulnerabilities on mount and when user changes
   useEffect(() => {
     fetchData()
   }, [fetchData, user])
 
-  // Add a new vulnerability
   const addVulnerability = async (columnId: string, vulnerability: Omit<Vulnerability, "id">) => {
     try {
-      // Use either mock service or API based on user
-      const newVulnerability = useMockData
-        ? await mockVulnerabilityService.create(vulnerability)
-        : await createVulnerability(vulnerability)
+      const newVulnerability = await createVulnerability(vulnerability)
 
       setColumns((prevColumns) =>
         prevColumns.map((column) => {
@@ -126,10 +117,7 @@ export function useVulnerabilities() {
   // Update an existing vulnerability
   const updateVulnerabilityItem = async (updatedVulnerability: Vulnerability) => {
     try {
-      // Call API or mock service to update vulnerability
-      const result = useMockData
-        ? await mockVulnerabilityService.update(updatedVulnerability.id, updatedVulnerability)
-        : await updateVulnerability(updatedVulnerability.id, updatedVulnerability)
+      await updateVulnerability(updatedVulnerability.id, updatedVulnerability)
 
       // Find which column currently contains the vulnerability
       let sourceColumnIndex = -1
@@ -203,10 +191,7 @@ export function useVulnerabilities() {
   // Delete a vulnerability
   const deleteVulnerability = async (vulnerabilityId: string) => {
     try {
-      // Call API or mock service to delete vulnerability
-      useMockData
-        ? await mockVulnerabilityService.delete(vulnerabilityId)
-        : await deleteVulnerabilityApi(vulnerabilityId)
+      await deleteVulnerabilityApi(vulnerabilityId)
 
       // Update local state
       const newColumns = columns.map((column) => {
@@ -237,26 +222,6 @@ export function useVulnerabilities() {
     return fetchData()
   }
 
-  // Reset mock data (only for admin)
-  const resetMockData = async () => {
-    if (useMockData) {
-      try {
-        await mockVulnerabilityService.reset()
-        await fetchData()
-        toast({
-          title: "Data reset",
-          description: "Mock vulnerability data has been reset to initial state",
-        })
-      } catch (err) {
-        toast({
-          title: "Error",
-          description: err instanceof Error ? err.message : "Failed to reset mock data",
-          variant: "destructive",
-        })
-      }
-    }
-  }
-
   return {
     columns,
     isLoading,
@@ -265,7 +230,5 @@ export function useVulnerabilities() {
     updateVulnerability: updateVulnerabilityItem,
     deleteVulnerability,
     refreshData,
-    resetMockData,
-    useMockData,
   }
 }

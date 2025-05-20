@@ -5,10 +5,10 @@ import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 import Column from "./column"
 import VulnerabilityDetailModal from "./vulnerability-detail-modal"
 import { useToast } from "@/hooks/use-toast"
-import type { Vulnerability } from "@/types/kanban"
+import { VulnSeverity, type Vulnerability } from "@/types/kanban"
 import { generateId } from "@/lib/utils"
 import Image from "next/image"
-import { LogOut, RefreshCw, RotateCcw } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 import { useVulnerabilities } from "@/hooks/use-vulnerabilities"
@@ -20,21 +20,15 @@ export default function KanbanBoard() {
   const {
     columns,
     isLoading,
-    error,
     addVulnerability,
     updateVulnerability,
     deleteVulnerability,
-    refreshData,
-    resetMockData,
-    useMockData,
   } = useVulnerabilities()
 
   const [selectedVulnerability, setSelectedVulnerability] = useState<Vulnerability | null>(null)
   const [isVulnerabilityModalOpen, setIsVulnerabilityModalOpen] = useState(false)
   const [isCreatingVulnerability, setIsCreatingVulnerability] = useState(false)
   const [newVulnerabilityColumnId, setNewVulnerabilityColumnId] = useState<string | null>(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
 
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result
@@ -88,7 +82,7 @@ export default function KanbanBoard() {
       title: "",
       description: "",
       status: column.title,
-      severity: "Medium",
+      severity: VulnSeverity.MEDIUM,
       cweId: "",
       suggestedFix: "",
       reportedAt: new Date().toISOString(),
@@ -127,32 +121,6 @@ export default function KanbanBoard() {
     } catch (error) {
       // Error is handled in the hook
       console.error("Failed to delete vulnerability:", error)
-    }
-  }
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    try {
-      await refreshData()
-      toast({
-        title: "Data refreshed",
-        description: "Vulnerability data has been updated",
-      })
-    } catch (error) {
-      // Error is handled in the hook
-    } finally {
-      setIsRefreshing(false)
-    }
-  }
-
-  const handleReset = async () => {
-    setIsResetting(true)
-    try {
-      await resetMockData()
-    } catch (error) {
-      // Error is handled in the hook
-    } finally {
-      setIsResetting(false)
     }
   }
 
@@ -206,16 +174,6 @@ export default function KanbanBoard() {
                 </div>
               </div>
             ))}
-          </div>
-        ) : error ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="bg-red-900/30 border border-red-700/30 text-red-400 p-4 rounded-md max-w-md">
-              <h3 className="text-lg font-medium mb-2">Error Loading Data</h3>
-              <p>{error}</p>
-              <Button onClick={handleRefresh} className="mt-4 bg-[#4F6DF5] hover:bg-[#6B85F6]">
-                Try Again
-              </Button>
-            </div>
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
