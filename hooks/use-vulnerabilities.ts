@@ -85,7 +85,8 @@ export function useVulnerabilities() {
   const addVulnerability = async (columnId: string, vulnerability: Omit<Vulnerability, "id">) => {
     try {
       const newVulnerability = await createVulnerability(vulnerability)
-
+      
+      // Only update state and show success toast if the API call succeeds
       setColumns((prevColumns) =>
         prevColumns.map((column) => {
           if (column.id === columnId) {
@@ -99,26 +100,28 @@ export function useVulnerabilities() {
       )
 
       toast({
-        title: "Vulnerability created",
+        title: "Success",
         description: `"${newVulnerability.title}" added successfully`,
       })
 
       return newVulnerability
-    } catch (err) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to create vulnerability",
+        description: error instanceof Error ? error.message : "Failed to create vulnerability",
         variant: "destructive",
       })
-      throw err
+      throw error // Important: Re-throw the error to prevent modal closing
     }
   }
 
   // Update an existing vulnerability
   const updateVulnerabilityItem = async (updatedVulnerability: Vulnerability) => {
     try {
-      await updateVulnerability(updatedVulnerability.id, updatedVulnerability)
-
+      const result = await updateVulnerability(updatedVulnerability.id, updatedVulnerability)
+      
+      // Only update state and show success toast if the API call succeeds
+      const newColumns = [...columns]
       // Find which column currently contains the vulnerability
       let sourceColumnIndex = -1
 
@@ -133,7 +136,6 @@ export function useVulnerabilities() {
       if (sourceColumnIndex === -1) return // Vulnerability not found
 
       // Create a copy of the columns
-      const newColumns = [...columns]
       const sourceColumn = newColumns[sourceColumnIndex]
 
       // If status hasn't changed, just update the vulnerability in place
@@ -173,18 +175,18 @@ export function useVulnerabilities() {
       setColumns(newColumns)
 
       toast({
-        title: "Vulnerability updated",
+        title: "Success",
         description: `"${updatedVulnerability.title}" has been updated`,
       })
 
-      return updatedVulnerability
-    } catch (err) {
+      return result // Return successful result
+    } catch (error) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to update vulnerability",
+        description: error instanceof Error ? error.message : "Failed to update vulnerability",
         variant: "destructive",
       })
-      throw err
+      throw error // Important: Re-throw the error to prevent modal closing
     }
   }
 
@@ -192,28 +194,25 @@ export function useVulnerabilities() {
   const deleteVulnerability = async (vulnerabilityId: string) => {
     try {
       await deleteVulnerabilityApi(vulnerabilityId)
-
-      // Update local state
-      const newColumns = columns.map((column) => {
-        return {
-          ...column,
-          vulnerabilities: column.vulnerabilities.filter((vulnerability) => vulnerability.id !== vulnerabilityId),
-        }
-      })
-
+      
+      // Only update state and show success toast if the API call succeeds
+      const newColumns = columns.map((column) => ({
+        ...column,
+        vulnerabilities: column.vulnerabilities.filter((v) => v.id !== vulnerabilityId),
+      }))
       setColumns(newColumns)
 
       toast({
-        title: "Vulnerability deleted",
+        title: "Success",
         description: "The vulnerability has been deleted",
       })
-    } catch (err) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Failed to delete vulnerability",
+        description: error instanceof Error ? error.message : "Failed to delete vulnerability",
         variant: "destructive",
       })
-      throw err
+      throw error // Important: Re-throw the error to prevent modal closing
     }
   }
 

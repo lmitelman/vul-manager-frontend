@@ -23,6 +23,7 @@ export default function KanbanBoard() {
     addVulnerability,
     updateVulnerability,
     deleteVulnerability,
+    refreshData,
   } = useVulnerabilities()
 
   const [selectedVulnerability, setSelectedVulnerability] = useState<Vulnerability | null>(null)
@@ -49,16 +50,23 @@ export default function KanbanBoard() {
     if (!vulnerability) return
 
     try {
-      // Update the vulnerability with the new status
-      const updatedVulnerability = { ...vulnerability, status: destColumn.title }
+      const updatedVulnerability = { 
+        ...vulnerability, 
+        status: destColumn.title.toUpperCase().replace(/ /g, '_'),
+        severity: vulnerability.severity.toUpperCase() as VulnSeverity
+      }
       await updateVulnerability(updatedVulnerability)
+
+      // Only refresh data after successful API call
+      await refreshData()
 
       // Update selected vulnerability if it's the one being moved
       if (selectedVulnerability && selectedVulnerability.id === draggableId) {
         setSelectedVulnerability({ ...updatedVulnerability })
       }
     } catch (error) {
-      // Error is handled in the hook, but we can add additional UI feedback here if needed
+      // On error, refresh to revert to the previous state
+      await refreshData()
       console.error("Failed to update vulnerability status:", error)
     }
   }
@@ -85,7 +93,7 @@ export default function KanbanBoard() {
       severity: VulnSeverity.MEDIUM,
       cweId: "",
       suggestedFix: "",
-      reportedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     }
 
     setSelectedVulnerability(newVulnerability)
@@ -96,31 +104,32 @@ export default function KanbanBoard() {
 
   const handleUpdateVulnerability = async (updatedVulnerability: Vulnerability) => {
     try {
-      // If we're creating a new vulnerability
       if (isCreatingVulnerability && newVulnerabilityColumnId) {
-        // Remove the temporary ID before sending to the API
         const { id, ...vulnerabilityWithoutId } = updatedVulnerability
         await addVulnerability(newVulnerabilityColumnId, vulnerabilityWithoutId)
         setIsCreatingVulnerability(false)
         setNewVulnerabilityColumnId(null)
+        await refreshData()
+        return true
       } else {
-        // Update existing vulnerability
         await updateVulnerability(updatedVulnerability)
+        await refreshData()
+        return true
       }
-      setSelectedVulnerability(null)
     } catch (error) {
-      // Error is handled in the hook
       console.error("Failed to update vulnerability:", error)
+      return false
     }
   }
 
   const handleDeleteVulnerability = async (vulnerabilityId: string) => {
     try {
       await deleteVulnerability(vulnerabilityId)
-      setSelectedVulnerability(null)
+      await refreshData()
+      return true // Return success
     } catch (error) {
-      // Error is handled in the hook
       console.error("Failed to delete vulnerability:", error)
+      return false // Return failure
     }
   }
 

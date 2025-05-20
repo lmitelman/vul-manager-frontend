@@ -6,7 +6,7 @@ export interface Vulnerability {
   severity: VulnSeverity
   cweId?: string
   suggestedFix?: string
-  reportedAt: string
+  createdAt: string
   assignedTo?: string
 }
 

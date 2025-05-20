@@ -88,30 +88,26 @@ export const updateVulnerability = async (
   id: string,
   vulnerability: Partial<Vulnerability>,
 ): Promise<Vulnerability> => {
-  try {
-    // Replace with your actual API endpoint
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITY(id)}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
-      },
-      body: JSON.stringify(vulnerability),
-    })
+  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITY(id)}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader() as Record<string, string>,
+    },
+    body: JSON.stringify(vulnerability),
+  })
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        localStorage.removeItem("authToken")
-        throw new Error("Your session has expired. Please log in again.")
-      }
-      throw new Error(`Error: ${response.status} ${response.statusText}`)
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("authToken")
+      throw new Error("Your session has expired. Please log in again.")
     }
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    return handleApiError(error)
+    const errorData = await response.json().catch(() => ({ message: 'An error occurred' }))
+    throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`)
   }
+
+  const data = await response.json()
+  return data
 }
 
 /**
@@ -120,24 +116,20 @@ export const updateVulnerability = async (
  * @returns Promise with the deletion result
  */
 export const deleteVulnerability = async (id: string): Promise<void> => {
-  try {
-    // Replace with your actual API endpoint
-    const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITY(id)}`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
-      },
-    })
+  const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITY(id)}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeader() as Record<string, string>,
+    },
+  })
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        localStorage.removeItem("authToken")
-        throw new Error("Your session has expired. Please log in again.")
-      }
-      throw new Error(`Error: ${response.status} ${response.statusText}`)
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("authToken")
+      throw new Error("Your session has expired. Please log in again.")
     }
-  } catch (error) {
-    return handleApiError(error)
+    const errorData = await response.json().catch(() => ({ message: 'An error occurred' }))
+    throw new Error(errorData.message || `Error: ${response.status} ${response.statusText}`)
   }
 }

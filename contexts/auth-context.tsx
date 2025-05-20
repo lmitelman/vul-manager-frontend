@@ -62,19 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true)
     try {
       await apiLogout()
-      setUser(null)
-      setToken(null)
-      localStorage.removeItem("user")
-      localStorage.removeItem("authToken")
-      router.push("/login")
     } catch (error) {
       console.error("Logout error:", error)
+    } finally {
       setUser(null)
       setToken(null)
       localStorage.removeItem("user")
-      localStorage.removeItem("authToken")
+      localStorage.removeItem("accessToken")
       router.push("/login")
-    } finally {
       setIsLoading(false)
     }
   }
