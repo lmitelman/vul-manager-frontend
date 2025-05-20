@@ -18,7 +18,6 @@ export function useVulnerabilities() {
   const { toast } = useToast()
   const { user } = useAuth()
 
-  // Fetch vulnerabilities from API or mock data
   const fetchData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
@@ -86,7 +85,6 @@ export function useVulnerabilities() {
     try {
       const newVulnerability = await createVulnerability(vulnerability)
       
-      // Only update state and show success toast if the API call succeeds
       setColumns((prevColumns) =>
         prevColumns.map((column) => {
           if (column.id === columnId) {
@@ -111,21 +109,17 @@ export function useVulnerabilities() {
         description: error instanceof Error ? error.message : "Failed to create vulnerability",
         variant: "destructive",
       })
-      throw error // Important: Re-throw the error to prevent modal closing
+      throw error
     }
   }
 
-  // Update an existing vulnerability
   const updateVulnerabilityItem = async (updatedVulnerability: Vulnerability) => {
     try {
       const result = await updateVulnerability(updatedVulnerability.id, updatedVulnerability)
       
-      // Only update state and show success toast if the API call succeeds
       const newColumns = [...columns]
-      // Find which column currently contains the vulnerability
       let sourceColumnIndex = -1
 
-      // Find the vulnerability in the current columns
       columns.forEach((column, colIndex) => {
         const index = column.vulnerabilities.findIndex((vulnerability) => vulnerability.id === updatedVulnerability.id)
         if (index !== -1) {
@@ -133,12 +127,10 @@ export function useVulnerabilities() {
         }
       })
 
-      if (sourceColumnIndex === -1) return // Vulnerability not found
+      if (sourceColumnIndex === -1) return
 
-      // Create a copy of the columns
       const sourceColumn = newColumns[sourceColumnIndex]
 
-      // If status hasn't changed, just update the vulnerability in place
       if (sourceColumn.title === updatedVulnerability.status) {
         newColumns[sourceColumnIndex] = {
           ...sourceColumn,
@@ -147,9 +139,6 @@ export function useVulnerabilities() {
           ),
         }
       } else {
-        // Status has changed, need to move the vulnerability to a different column
-
-        // Remove the vulnerability from the source column
         newColumns[sourceColumnIndex] = {
           ...sourceColumn,
           vulnerabilities: sourceColumn.vulnerabilities.filter(
@@ -157,17 +146,14 @@ export function useVulnerabilities() {
           ),
         }
 
-        // Find the destination column
         const destColumnIndex = newColumns.findIndex((col) => col.title === updatedVulnerability.status)
 
         if (destColumnIndex !== -1) {
-          // Add the vulnerability to the destination column
           newColumns[destColumnIndex] = {
             ...newColumns[destColumnIndex],
             vulnerabilities: [...newColumns[destColumnIndex].vulnerabilities, updatedVulnerability],
           }
         } else {
-          // If destination column not found, add the vulnerability back to the source column
           newColumns[sourceColumnIndex].vulnerabilities.push(updatedVulnerability)
         }
       }
@@ -179,23 +165,21 @@ export function useVulnerabilities() {
         description: `"${updatedVulnerability.title}" has been updated`,
       })
 
-      return result // Return successful result
+      return result
     } catch (error) {
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update vulnerability",
         variant: "destructive",
       })
-      throw error // Important: Re-throw the error to prevent modal closing
+      throw error
     }
   }
 
-  // Delete a vulnerability
   const deleteVulnerability = async (vulnerabilityId: string) => {
     try {
       await deleteVulnerabilityApi(vulnerabilityId)
       
-      // Only update state and show success toast if the API call succeeds
       const newColumns = columns.map((column) => ({
         ...column,
         vulnerabilities: column.vulnerabilities.filter((v) => v.id !== vulnerabilityId),
@@ -212,11 +196,10 @@ export function useVulnerabilities() {
         description: error instanceof Error ? error.message : "Failed to delete vulnerability",
         variant: "destructive",
       })
-      throw error // Important: Re-throw the error to prevent modal closing
+      throw error
     }
   }
 
-  // Refresh data
   const refreshData = () => {
     return fetchData()
   }

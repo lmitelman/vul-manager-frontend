@@ -1,7 +1,6 @@
 import { API_BASE_URL, ENDPOINTS, getAuthHeader } from "./config"
 import type { Vulnerability } from "@/types/kanban"
 
-// Error handling helper
 const handleApiError = (error: any) => {
   console.error("API Error:", error)
 
@@ -15,10 +14,6 @@ const handleApiError = (error: any) => {
   }
 }
 
-/**
- * Fetch all vulnerabilities
- * @returns Promise with array of vulnerabilities
- */
 export const fetchVulnerabilities = async (): Promise<Vulnerability[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITIES}`, {
@@ -46,19 +41,13 @@ export const fetchVulnerabilities = async (): Promise<Vulnerability[]> => {
   }
 }
 
-/**
- * Create a new vulnerability
- * @param vulnerability The vulnerability data to create
- * @returns Promise with the created vulnerability
- */
 export const createVulnerability = async (vulnerability: Omit<Vulnerability, "id">): Promise<Vulnerability> => {
   try {
-    // Replace with your actual API endpoint
     const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITIES}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader() as Record<string, string>, // This adds the Authorization: Bearer <token> header
+        ...getAuthHeader() as Record<string, string>,
       },
       body: JSON.stringify(vulnerability),
     })
@@ -78,12 +67,6 @@ export const createVulnerability = async (vulnerability: Omit<Vulnerability, "id
   }
 }
 
-/**
- * Update an existing vulnerability
- * @param id The ID of the vulnerability to update
- * @param vulnerability The updated vulnerability data
- * @returns Promise with the updated vulnerability
- */
 export const updateVulnerability = async (
   id: string,
   vulnerability: Partial<Vulnerability>,
@@ -110,11 +93,6 @@ export const updateVulnerability = async (
   return data
 }
 
-/**
- * Delete a vulnerability
- * @param id The ID of the vulnerability to delete
- * @returns Promise with the deletion result
- */
 export const deleteVulnerability = async (id: string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}${ENDPOINTS.VULNERABILITY(id)}`, {
     method: "DELETE",
